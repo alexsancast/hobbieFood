@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tipo 31 - Factura de Crédito Fiscal -->
+    <record id="template_ecf_31" model="gti.ecf.template">
+        <field name="tipo_ecf">31</field>
+        <field name="descripcion">Factura de Crédito Fiscal</field>
+        <field name="notas">Requiere RNC y Razón Social del comprador. El RNCComprador debe ser válido ante la DGII.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 31,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Comprador": {
+      "RNCComprador": "{rnc_comprador}",
+      "RazonSocialComprador": "{razon_social_comprador}"
+    },
+    "Totales": {
+      "MontoGravadoTotal": "{monto_gravado}",
+      "MontoGravadoI1": "{monto_gravado}",
+      "ITBIS1": 18,
+      "TotalITBIS": "{total_itbis}",
+      "TotalITBIS1": "{total_itbis}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 1,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 2,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ]
+}</field>
+    </record>
+
+    <!-- Tipo 32 - Factura de Consumo -->
+    <record id="template_ecf_32" model="gti.ecf.template">
+        <field name="tipo_ecf">32</field>
+        <field name="descripcion">Factura de Consumo</field>
+        <field name="notas">No requiere RNC del comprador. Para montos menores de RD$250,000.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 32,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Comprador": {},
+    "Totales": {
+      "MontoGravadoTotal": "{monto_gravado}",
+      "MontoGravadoI1": "{monto_gravado}",
+      "ITBIS1": 18,
+      "TotalITBIS": "{total_itbis}",
+      "TotalITBIS1": "{total_itbis}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 1,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 2,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ]
+}</field>
+    </record>
+
+    <!-- Tipo 33 - Nota de Débito -->
+    <record id="template_ecf_33" model="gti.ecf.template">
+        <field name="tipo_ecf">33</field>
+        <field name="descripcion">Nota de Débito</field>
+        <field name="notas">Requiere InformacionReferencia con el NCFModificado (e-NCF original) y RNC del comprador.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 33,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Comprador": {
+      "RNCComprador": "{rnc_comprador}",
+      "RazonSocialComprador": "{razon_social_comprador}"
+    },
+    "Totales": {
+      "MontoGravadoTotal": "{monto_gravado}",
+      "MontoGravadoI1": "{monto_gravado}",
+      "ITBIS1": 18,
+      "TotalITBIS": "{total_itbis}",
+      "TotalITBIS1": "{total_itbis}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 1,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 2,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ],
+  "InformacionReferencia": {
+    "NCFModificado": "{ncf_modificado}",
+    "FechaNCFModificado": "{fecha_ncf_modificado}",
+    "CodigoModificacion": 3,
+    "RazonModificacion": "{razon_modificacion}"
+  }
+}</field>
+    </record>
+
+    <!-- Tipo 34 - Nota de Crédito -->
+    <record id="template_ecf_34" model="gti.ecf.template">
+        <field name="tipo_ecf">34</field>
+        <field name="descripcion">Nota de Crédito</field>
+        <field name="notas">Requiere InformacionReferencia con NCFModificado. El RNCComprador debe coincidir con la factura original.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 34,
+      "IndicadorNotaCredito": 0,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Comprador": {
+      "RNCComprador": "{rnc_comprador}",
+      "RazonSocialComprador": "{razon_social_comprador}"
+    },
+    "Totales": {
+      "MontoGravadoTotal": "{monto_gravado}",
+      "MontoGravadoI1": "{monto_gravado}",
+      "ITBIS1": 18,
+      "TotalITBIS": "{total_itbis}",
+      "TotalITBIS1": "{total_itbis}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 1,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 2,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ],
+  "InformacionReferencia": {
+    "NCFModificado": "{ncf_modificado}",
+    "FechaNCFModificado": "{fecha_ncf_modificado}",
+    "CodigoModificacion": 1
+  }
+}</field>
+    </record>
+
+    <!-- Tipo 43 - Gastos Menores -->
+    <record id="template_ecf_43" model="gti.ecf.template">
+        <field name="tipo_ecf">43</field>
+        <field name="descripcion">Gastos Menores</field>
+        <field name="notas">Sin comprador. IndicadorFacturacion: 4 (Exento). Solo MontoExento y MontoTotal.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 43,
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Totales": {
+      "MontoExento": "{monto_total}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 4,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 1,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ]
+}</field>
+    </record>
+
+    <!-- Tipo 44 - Régimen Especial -->
+    <record id="template_ecf_44" model="gti.ecf.template">
+        <field name="tipo_ecf">44</field>
+        <field name="descripcion">Régimen Especial</field>
+        <field name="notas">IndicadorFacturacion: 4 (Exento). Comprador obligatorio con RNC del beneficiario. TipoIngresos requerido. Orden IdDoc: TipoeCF → eNCF → TipoIngresos → TipoPago.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 44,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": true
+    },
+    "Comprador": {
+      "RNCComprador": "{rnc_comprador}",
+      "RazonSocialComprador": "{razon_social_comprador}"
+    },
+    "Totales": {
+      "MontoExento": "{monto_total}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 4,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 1,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ]
+}</field>
+    </record>
+
+    <!-- Tipo 45 - Gubernamental -->
+    <record id="template_ecf_45" model="gti.ecf.template">
+        <field name="tipo_ecf">45</field>
+        <field name="descripcion">Gubernamental</field>
+        <field name="notas">Requiere RNC de entidad gubernamental como comprador.</field>
+        <field name="template_json">{
+  "Encabezado": {
+    "IdDoc": {
+      "TipoeCF": 45,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "{rnc_emisor}",
+      "RazonSocialEmisor": "{razon_social_emisor}",
+      "DireccionEmisor": "{direccion_emisor}",
+      "Provincia": "{provincia}",
+      "Municipio": "{municipio}",
+      "TablaTelefonoEmisor": [
+        { "TelefonoEmisor": "{telefono_emisor}" }
+      ],
+      "FechaEmision": "{fecha_emision}",
+      "EmisorPorDefecto": false
+    },
+    "Comprador": {
+      "RNCComprador": "{rnc_comprador}",
+      "RazonSocialComprador": "{razon_social_comprador}"
+    },
+    "Totales": {
+      "MontoGravadoTotal": "{monto_gravado}",
+      "MontoGravadoI1": "{monto_gravado}",
+      "ITBIS1": 18,
+      "TotalITBIS": "{total_itbis}",
+      "TotalITBIS1": "{total_itbis}",
+      "MontoTotal": "{monto_total}"
+    }
+  },
+  "DetallesItems": [
+    {
+      "NumeroLinea": 1,
+      "IndicadorFacturacion": 1,
+      "NombreItem": "{nombre_item}",
+      "IndicadorBienoServicio": 2,
+      "CantidadItem": 1.0,
+      "PrecioUnitarioItem": "{precio_unitario}",
+      "MontoItem": "{monto_item}"
+    }
+  ]
+}</field>
+    </record>
+
+</odoo>

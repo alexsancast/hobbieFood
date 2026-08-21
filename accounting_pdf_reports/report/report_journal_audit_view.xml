@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="journal_audit_view" name="Journals Audit Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Journals Audit</title>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+    <style>
+        .afr-container { max-width: 1400px; }
+        .afr-tax-summary {
+            margin: 0;
+            padding: 8px 14px;
+            background: #fafafa;
+            border-top: 1px solid #e5e7eb;
+        }
+        .afr-tax-summary table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .afr-tax-summary th, .afr-tax-summary td { padding: 4px 8px; text-align: left; }
+        .afr-tax-summary th { color: #6b7280; font-weight: 600; text-transform: uppercase;
+                              font-size: 10.5px; letter-spacing: 0.04em; }
+        .afr-tax-summary td.afr-text-end { text-align: right; font-variant-numeric: tabular-nums; }
+        .afr-tax-summary .afr-tax-title {
+            color: #6b7280; font-weight: 600; text-transform: uppercase;
+            font-size: 10.5px; letter-spacing: 0.04em; margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title">Journals Audit</h1>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>From:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>To:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <div class="afr-filter-row">
+            <t t-call="accounting_pdf_reports.report_filter_bar_common"/>
+
+            <div class="afr-field">
+                <label class="afr-label">Sort by</label>
+                <select name="sort_selection" class="afr-select">
+                    <option value="move_name"
+                            t-att-selected="'selected' if data.get('sort_selection') == 'move_name' else None">Entry Number</option>
+                    <option value="date"
+                            t-att-selected="'selected' if data.get('sort_selection') == 'date' else None">Date</option>
+                </select>
+            </div>
+
+            <div class="afr-check">
+                <input type="checkbox" class="afr-check-input" id="cb_amount_currency"
+                       name="amount_currency" value="1"
+                       t-att-checked="'checked' if data.get('amount_currency') else None"/>
+                <label class="afr-check-label" for="cb_amount_currency">Show Currency</label>
+            </div>
+
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+    </form>
+
+    <!-- View-only toolbar -->
+    <div class="afr-view-toolbar">
+        <button type="button" class="afr-btn afr-btn-outline" onclick="expandAll()">Expand All</button>
+        <button type="button" class="afr-btn afr-btn-outline" onclick="collapseAll()">Collapse All</button>
+    </div>
+
+    <!-- Journals -->
+    <t t-if="not journals_data">
+        <div class="afr-ledger-empty">No journals match the selected filters.</div>
+    </t>
+
+    <t t-foreach="journals_data" t-as="jd">
+        <div class="afr-account-section">
+            <div class="afr-account-header"
+                 t-att-onclick="'toggleJournal(%d)' % jd_index">
+                <span class="o-toggle-icon" t-att-id="'icon-%d' % jd_index">&#9660;</span>
+                <span class="afr-account-code" t-esc="jd['journal'].code or ''"/>
+                <span class="afr-account-name" t-esc="jd['journal'].name or ''"/>
+                <span class="afr-account-totals">
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Debit</span>
+                        <span class="afr-stat-value" t-esc="fmt(jd['debit'])"/>
+                    </span>
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Credit</span>
+                        <span class="afr-stat-value" t-esc="fmt(jd['credit'])"/>
+                    </span>
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Lines</span>
+                        <span class="afr-stat-value" t-esc="len(jd['move_lines'])"/>
+                    </span>
+                </span>
+            </div>
+            <div t-att-id="'body-%d' % jd_index">
+                <table class="afr-ledger-table">
+                    <thead>
+                        <tr>
+                            <th style="width:100px;">Date</th>
+                            <th style="width:130px;">Move</th>
+                            <th style="width:130px;">Account</th>
+                            <th>Partner</th>
+                            <th>Label</th>
+                            <th class="afr-text-end" style="width:110px;">Debit</th>
+                            <th class="afr-text-end" style="width:110px;">Credit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="not jd['move_lines']">
+                            <tr><td colspan="7" class="afr-ledger-empty">No move lines.</td></tr>
+                        </t>
+                        <tr t-foreach="jd['move_lines']" t-as="ml">
+                            <td t-esc="ml.date or ''"/>
+                            <td t-esc="ml.move_id.name or ''"/>
+                            <td t-esc="ml.account_id.code or ''"/>
+                            <td t-esc="ml.partner_id.name or ''"/>
+                            <td t-esc="ml.name or ''"/>
+                            <td class="afr-text-end" t-esc="fmt(ml.debit)"/>
+                            <td class="afr-text-end" t-esc="fmt(ml.credit)"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <t t-if="jd['taxes']">
+                    <div class="afr-tax-summary">
+                        <div class="afr-tax-title">Taxes</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tax</th>
+                                    <th class="afr-text-end" style="width:140px;">Base</th>
+                                    <th class="afr-text-end" style="width:140px;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="jd['taxes']" t-as="tx">
+                                    <td t-esc="tx['name']"/>
+                                    <td class="afr-text-end" t-esc="fmt(tx['base'])"/>
+                                    <td class="afr-text-end" t-esc="fmt(tx['amount'])"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</div>
+
+<script>
+    var journalStates = {};
+
+    function toggleJournal(id) {
+        var body = document.getElementById('body-' + id);
+        var icon = document.getElementById('icon-' + id);
+        var expanded = journalStates[id] !== false;
+        journalStates[id] = !expanded;
+        if (body) body.style.display = expanded ? 'none' : '';
+        if (icon) {
+            if (expanded) icon.classList.add('collapsed');
+            else icon.classList.remove('collapsed');
+        }
+    }
+
+    function expandAll() {
+        document.querySelectorAll('[id^="body-"]').forEach(function(el) { el.style.display = ''; });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) { i.classList.remove('collapsed'); });
+        Object.keys(journalStates).forEach(function(k) { journalStates[k] = true; });
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('[id^="body-"]').forEach(function(el) { el.style.display = 'none'; });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) { i.classList.add('collapsed'); });
+        Object.keys(journalStates).forEach(function(k) { journalStates[k] = false; });
+    }
+
+    window.onbeforeprint = expandAll;
+</script>
+</body>
+</html>
+</template>
+
+</odoo>

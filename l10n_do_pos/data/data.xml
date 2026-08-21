@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="res.partner" id="default_pos_partner" forcecreate="0">
+            <field name="name">Cliente de consumo</field>
+        </record>
+
+        <!-- ponytail: pos_partner_id ya viene del default del campo en pos_config.py.
+             En Odoo 19 no existe el xmlid estatico point_of_sale.pos_config_main
+             (la config "main" se crea por codigo), asi que no se puede referenciar aqui.
+             El metodo de pago credit_note se asigna a la config POS desde Ajustes. -->
+        <record model="pos.payment.method" id="credit_note">
+            <field name="name">Nota de Crédito</field>
+            <field name="split_transactions">True</field>
+            <field name="is_credit_note">True</field>
+        </record>
+    </data>
+</odoo>

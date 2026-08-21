@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="aged_partner_view" name="Aged Partner Balance Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title t-esc="title"/>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+    <style>
+        .afr-container { max-width: 1400px; }
+        .afr-aged-table td.afr-partner-name { font-weight: 500; color: #111827; }
+        .afr-aged-table td.afr-amount { font-variant-numeric: tabular-nums; }
+        .afr-aged-table td.afr-amount.afr-zero { color: #9ca3af; }
+        .afr-aged-table tbody tr:hover td { background: #f9fafb; }
+    </style>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title" t-esc="title"/>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>As of:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <strong>Period:</strong> <span t-esc="data.get('period_length') or 30"/> days&#160;&#160;
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar (custom — no journals, single date) -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <input type="hidden" name="title" t-att-value="title"/>
+        <t t-if="hide_result_selection">
+            <input type="hidden" name="result_selection" t-att-value="data.get('result_selection') or 'customer'"/>
+            <input type="hidden" name="hide_result_selection" value="1"/>
+        </t>
+        <div class="afr-filter-row">
+            <div class="afr-field">
+                <label class="afr-label">Date</label>
+                <input type="date" name="date_from" class="afr-input"
+                       t-att-value="data.get('date_from') or ''"/>
+            </div>
+            <div class="afr-field">
+                <label class="afr-label">Period Length (days)</label>
+                <input type="number" name="period_length" class="afr-input" min="1"
+                       t-att-value="data.get('period_length') or 30"
+                       style="min-width:130px;"/>
+            </div>
+            <div class="afr-field">
+                <label class="afr-label">Target Moves</label>
+                <select name="target_move" class="afr-select">
+                    <option value="posted"
+                            t-att-selected="'selected' if data.get('target_move') == 'posted' else None">Posted</option>
+                    <option value="all"
+                            t-att-selected="'selected' if data.get('target_move') == 'all' else None">All</option>
+                </select>
+            </div>
+            <t t-if="not hide_result_selection">
+                <div class="afr-field">
+                    <label class="afr-label">Partners</label>
+                    <select name="result_selection" class="afr-select">
+                        <option value="customer"
+                                t-att-selected="'selected' if data.get('result_selection') == 'customer' else None">Receivable</option>
+                        <option value="supplier"
+                                t-att-selected="'selected' if data.get('result_selection') == 'supplier' else None">Payable</option>
+                        <option value="customer_supplier"
+                                t-att-selected="'selected' if data.get('result_selection') == 'customer_supplier' else None">Receivable &amp; Payable</option>
+                    </select>
+                </div>
+            </t>
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+    </form>
+
+    <!-- Matrix table: Partner | Not Due | 1-30 | 31-60 | 61-90 | 91-120 | +120 | Total -->
+    <table class="afr-table afr-aged-table">
+        <thead>
+            <tr>
+                <th>Partner</th>
+                <th class="afr-text-end" style="width:120px;">Not Due</th>
+                <th class="afr-text-end" style="width:110px;" t-esc="periods[4].get('name') or '1-30'"/>
+                <th class="afr-text-end" style="width:110px;" t-esc="periods[3].get('name') or '31-60'"/>
+                <th class="afr-text-end" style="width:110px;" t-esc="periods[2].get('name') or '61-90'"/>
+                <th class="afr-text-end" style="width:110px;" t-esc="periods[1].get('name') or '91-120'"/>
+                <th class="afr-text-end" style="width:110px;" t-esc="periods[0].get('name') or '+120'"/>
+                <th class="afr-text-end" style="width:140px;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-if="not movelines">
+                <tr><td colspan="8" class="afr-ledger-empty">No data for the selected filters.</td></tr>
+            </t>
+            <tr t-foreach="movelines" t-as="row">
+                <td class="afr-partner-name" t-esc="row.get('name') or '?'"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('direction') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('direction'))"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('4') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('4'))"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('3') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('3'))"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('2') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('2'))"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('1') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('1'))"/>
+                <td class="afr-text-end afr-amount"
+                    t-att-class="'afr-text-end afr-amount afr-zero' if not row.get('0') else 'afr-text-end afr-amount'"
+                    t-esc="fmt(row.get('0'))"/>
+                <td class="afr-text-end afr-amount" style="font-weight:700;" t-esc="fmt(row.get('total'))"/>
+            </tr>
+        </tbody>
+        <tfoot t-if="movelines">
+            <tr>
+                <td>Total</td>
+                <td class="afr-text-end" t-esc="fmt(totals[6])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[4])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[3])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[2])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[1])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[0])"/>
+                <td class="afr-text-end" t-esc="fmt(totals[5])"/>
+            </tr>
+        </tfoot>
+    </table>
+
+</div>
+</body>
+</html>
+</template>
+
+</odoo>

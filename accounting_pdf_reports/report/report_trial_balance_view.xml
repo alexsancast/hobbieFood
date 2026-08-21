@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="trial_balance_view" name="Trial Balance Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Trial Balance</title>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title">Trial Balance</h1>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>From:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>To:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <div class="afr-filter-row">
+            <t t-call="accounting_pdf_reports.report_filter_bar_common"/>
+
+            <div class="afr-field">
+                <label class="afr-label">Display Accounts</label>
+                <select name="display_account" class="afr-select">
+                    <option value="all"
+                            t-att-selected="'selected' if data.get('display_account') == 'all' else None">All</option>
+                    <option value="movement"
+                            t-att-selected="'selected' if data.get('display_account') == 'movement' else None">With movements</option>
+                    <option value="not_zero"
+                            t-att-selected="'selected' if data.get('display_account') == 'not_zero' else None">Balance ≠ 0</option>
+                </select>
+            </div>
+
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+    </form>
+
+    <!-- Report table -->
+    <table class="afr-table">
+        <thead>
+            <tr>
+                <th style="width:120px;">Code</th>
+                <th>Account</th>
+                <th class="afr-text-end" style="width:140px;">Debit</th>
+                <th class="afr-text-end" style="width:140px;">Credit</th>
+                <th class="afr-text-end" style="width:140px;">Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-if="not accounts">
+                <tr><td colspan="5" class="afr-ledger-empty">No accounts match the selected filters.</td></tr>
+            </t>
+            <tr t-foreach="accounts" t-as="acc">
+                <td t-esc="acc.get('code')"/>
+                <td t-esc="acc.get('name')"/>
+                <td class="afr-text-end" t-esc="fmt(acc.get('debit'))"/>
+                <td class="afr-text-end" t-esc="fmt(acc.get('credit'))"/>
+                <td class="afr-text-end" t-esc="fmt(acc.get('balance'))"/>
+            </tr>
+        </tbody>
+        <tfoot t-if="accounts">
+            <tr>
+                <td colspan="2">Total</td>
+                <td class="afr-text-end" t-esc="fmt(totals['debit'])"/>
+                <td class="afr-text-end" t-esc="fmt(totals['credit'])"/>
+                <td class="afr-text-end" t-esc="fmt(totals['balance'])"/>
+            </tr>
+        </tfoot>
+    </table>
+
+</div>
+</body>
+</html>
+</template>
+
+</odoo>

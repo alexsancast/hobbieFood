@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_account_move_reversal_inherited" model="ir.ui.view">
+        <field name="name">view.account.move.reversal.inherited</field>
+        <field name="model">account.move.reversal</field>
+        <field name="inherit_id" ref="account.view_account_move_reversal"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='move_type']" position="after">
+                <field name="is_fiscal_refund" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='reason']" position="after">
+                <field name="is_vendor_refund" invisible="1"/>
+                <field name="refund_ref"
+                    invisible="[('is_vendor_refund', '=', False)]"
+                    required="[('is_fiscal_refund', '=', True), ('is_vendor_refund', '=', True)]"
+                />
+                <field name="ncf_expiration_date"
+                    invisible="[('is_vendor_refund', '=', False)]"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

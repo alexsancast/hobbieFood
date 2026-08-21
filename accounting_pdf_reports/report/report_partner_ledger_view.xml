@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="partner_ledger_view" name="Partner Ledger Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Partner Ledger</title>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+    <style>
+        .afr-container { max-width: 1400px; }
+    </style>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title">Partner Ledger</h1>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>From:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>To:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <div class="afr-filter-row">
+            <t t-call="accounting_pdf_reports.report_filter_bar_common"/>
+
+            <div class="afr-field">
+                <label class="afr-label">Partners</label>
+                <select name="result_selection" class="afr-select">
+                    <option value="customer"
+                            t-att-selected="'selected' if data.get('result_selection') == 'customer' else None">Receivable</option>
+                    <option value="supplier"
+                            t-att-selected="'selected' if data.get('result_selection') == 'supplier' else None">Payable</option>
+                    <option value="customer_supplier"
+                            t-att-selected="'selected' if data.get('result_selection') == 'customer_supplier' else None">Receivable &amp; Payable</option>
+                </select>
+            </div>
+
+            <div class="afr-check">
+                <input type="checkbox" class="afr-check-input" id="cb_reconciled"
+                       name="reconciled" value="1"
+                       t-att-checked="'checked' if data.get('reconciled') else None"/>
+                <label class="afr-check-label" for="cb_reconciled">Include Reconciled</label>
+            </div>
+
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+    </form>
+
+    <!-- View-only toolbar -->
+    <div class="afr-view-toolbar">
+        <button type="button" class="afr-btn afr-btn-outline" onclick="expandAll()">Expand All</button>
+        <button type="button" class="afr-btn afr-btn-outline" onclick="collapseAll()">Collapse All</button>
+    </div>
+
+    <!-- Partners -->
+    <t t-if="not partners_data">
+        <div class="afr-ledger-empty">No partners match the selected filters.</div>
+    </t>
+
+    <t t-foreach="partners_data" t-as="pd">
+        <div class="afr-account-section">
+            <div class="afr-account-header"
+                 t-att-onclick="'togglePartner(%d)' % pd_index">
+                <span class="o-toggle-icon" t-att-id="'icon-%d' % pd_index">&#9660;</span>
+                <span class="afr-account-code" t-esc="pd['partner'].ref or ''"/>
+                <span class="afr-account-name" t-esc="pd['partner'].name or '?'"/>
+                <span class="afr-account-totals">
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Debit</span>
+                        <span class="afr-stat-value" t-esc="fmt(pd['debit'])"/>
+                    </span>
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Credit</span>
+                        <span class="afr-stat-value" t-esc="fmt(pd['credit'])"/>
+                    </span>
+                    <span class="afr-stat">
+                        <span class="afr-stat-label">Balance</span>
+                        <span class="afr-stat-value" t-esc="fmt(pd['balance'])"/>
+                    </span>
+                </span>
+            </div>
+            <div t-att-id="'body-%d' % pd_index">
+                <table class="afr-ledger-table">
+                    <thead>
+                        <tr>
+                            <th style="width:100px;">Date</th>
+                            <th style="width:80px;">Journal</th>
+                            <th style="width:140px;">Account</th>
+                            <th>Ref / Label</th>
+                            <th class="afr-text-end" style="width:110px;">Debit</th>
+                            <th class="afr-text-end" style="width:110px;">Credit</th>
+                            <th class="afr-text-end" style="width:120px;">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="pd['lines']" t-as="line">
+                            <td t-esc="line.get('date') or ''"/>
+                            <td t-esc="line.get('code') or ''"/>
+                            <td t-esc="line.get('a_name') or ''"/>
+                            <td t-esc="line.get('displayed_name') or ''"/>
+                            <td class="afr-text-end" t-esc="fmt(line.get('debit'))"/>
+                            <td class="afr-text-end" t-esc="fmt(line.get('credit'))"/>
+                            <td class="afr-text-end" t-esc="fmt(line.get('progress'))"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+</div>
+
+<script>
+    var partnerStates = {};
+
+    function togglePartner(id) {
+        var body = document.getElementById('body-' + id);
+        var icon = document.getElementById('icon-' + id);
+        var expanded = partnerStates[id] !== false;
+        partnerStates[id] = !expanded;
+        if (body) body.style.display = expanded ? 'none' : '';
+        if (icon) {
+            if (expanded) icon.classList.add('collapsed');
+            else icon.classList.remove('collapsed');
+        }
+    }
+
+    function expandAll() {
+        document.querySelectorAll('[id^="body-"]').forEach(function(el) { el.style.display = ''; });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) { i.classList.remove('collapsed'); });
+        Object.keys(partnerStates).forEach(function(k) { partnerStates[k] = true; });
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('[id^="body-"]').forEach(function(el) { el.style.display = 'none'; });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) { i.classList.add('collapsed'); });
+        Object.keys(partnerStates).forEach(function(k) { partnerStates[k] = false; });
+    }
+
+    window.onbeforeprint = expandAll;
+</script>
+</body>
+</html>
+</template>
+
+</odoo>

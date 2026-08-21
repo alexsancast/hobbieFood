@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_gti_ecf_template_form" model="ir.ui.view">
+        <field name="name">gti.ecf.template.form</field>
+        <field name="model">gti.ecf.template</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla JSON e-CF">
+                <header>
+                    <button
+                        name="action_formatear_json"
+                        string="Formatear JSON"
+                        type="object"
+                        class="btn-secondary"
+                    />
+                    <field name="json_valido" invisible="1"/>
+                    <span class="badge text-bg-success" invisible="not json_valido">JSON Válido</span>
+                    <span class="badge text-bg-danger" invisible="json_valido">JSON Inválido</span>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="tipo_ecf"/>
+                        <h1>
+                            <field name="tipo_ecf"/>
+                        </h1>
+                        <h2>
+                            <field name="descripcion" placeholder="Descripción del tipo de comprobante"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Notas y Requisitos">
+                            <field name="notas" nolabel="1" colspan="2"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Plantilla JSON">
+                            <field name="template_json" widget="code" options="{'mode': 'json'}"
+                                placeholder="Pegue aquí la estructura JSON para este tipo de e-CF..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_gti_ecf_template_list" model="ir.ui.view">
+        <field name="name">gti.ecf.template.list</field>
+        <field name="model">gti.ecf.template</field>
+        <field name="arch" type="xml">
+            <list string="Plantillas e-CF">
+                <field name="tipo_ecf"/>
+                <field name="descripcion"/>
+                <field name="json_valido" widget="boolean"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_gti_ecf_template" model="ir.actions.act_window">
+        <field name="name">Plantillas JSON e-CF</field>
+        <field name="res_model">gti.ecf.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem
+        id="menu_gti_ecf_template"
+        name="Plantillas JSON"
+        parent="menu_gti_ecf_root"
+        action="action_gti_ecf_template"
+        sequence="20"
+        groups="gti_ecf.group_gti_ecf_admin"
+    />
+
+</odoo>

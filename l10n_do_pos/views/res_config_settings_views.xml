@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="inhertit_res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">l10n.do.pos.config.view.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//block[@id='pos_accounting_section']" position="inside">
+                <field name="l10n_do_fiscal_journal" invisible="1"/>
+                <setting id="l10n_do_pos_default_customer" string="Default customer" help="Default customer for POS orders">
+                    <field name="pos_partner_id" required="l10n_do_fiscal_journal" options="{'no_create': True}"/>
+                </setting>
+                <setting id="l10n_do_pos_order_history" string="Order history" help="Limit order history" groups="base.group_no_one">
+                    <field name="l10n_do_type_limit_order_history" widget="radio"/>
+                    <div class="content-group mt16" invisible="l10n_do_type_limit_order_history != 'days'">
+                        <label for="l10n_do_type_limit_order_history_days" string="Max quantity days" class="col-lg-3 o_light_label"/>
+                        <field name="l10n_do_type_limit_order_history_days" class="oe_inline"/>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

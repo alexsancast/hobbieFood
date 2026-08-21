@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!--
+    Shared filter-bar partials reused across all financial report web views.
+
+    Required template vars for `report_filter_bar_common`:
+      - data: dict with date_from, date_to, target_move
+      - all_journals: recordset of journals to list
+      - selected_journal_ids: set of int ids that should appear pre-selected
+
+    Required template vars for `report_filter_bar_buttons`:
+      - pdf_url: string URL for the PDF submit button
+-->
+
+<template id="report_filter_bar_common">
+    <div class="afr-field">
+        <label class="afr-label">From</label>
+        <input type="date" name="date_from" class="afr-input"
+               t-att-value="data.get('date_from') or ''"/>
+    </div>
+    <div class="afr-field">
+        <label class="afr-label">To</label>
+        <input type="date" name="date_to" class="afr-input"
+               t-att-value="data.get('date_to') or ''"/>
+    </div>
+    <div class="afr-field">
+        <label class="afr-label">Target Moves</label>
+        <select name="target_move" class="afr-select">
+            <option value="posted"
+                    t-att-selected="'selected' if data.get('target_move') == 'posted' else None">Posted</option>
+            <option value="all"
+                    t-att-selected="'selected' if data.get('target_move') == 'all' else None">All</option>
+        </select>
+    </div>
+    <div class="afr-field">
+        <label class="afr-label">
+            Journals <span class="afr-label-hint">ctrl + click</span>
+        </label>
+        <select name="journal_ids" class="afr-multiselect" multiple="multiple" size="4">
+            <t t-foreach="all_journals" t-as="j">
+                <option t-att-value="j.id"
+                        t-att-selected="'selected' if j.id in selected_journal_ids else None"
+                        t-esc="j.display_name"/>
+            </t>
+        </select>
+    </div>
+</template>
+
+<template id="report_filter_bar_buttons">
+    <div class="afr-actions">
+        <button type="submit" class="afr-btn afr-btn-primary">Apply</button>
+        <button type="submit" t-att-formaction="pdf_url" formmethod="post" formtarget="_blank"
+                class="afr-btn afr-btn-outline">PDF</button>
+        <button type="button" class="afr-btn afr-btn-outline afr-no-print"
+                onclick="window.print()">Print</button>
+    </div>
+</template>
+
+</odoo>

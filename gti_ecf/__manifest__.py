@@ -1,0 +1,21 @@
+{
+    "name": "GTI Factura Electrónica (e-CF)",
+    "summary": "Integración con la API de GTI para emisión de Comprobantes Fiscales Electrónicos en República Dominicana.",
+    "author": "Metal Acero MET SRL",
+    "category": "Accounting/Localizations",
+    "version": "19.0.1.0.0",
+    "license": "LGPL-3",
+    "depends": ["base", "account", "account_debit_note", "l10n_do_accounting"],
+    "data": [
+        "security/security.xml",
+        "security/ir.model.access.csv",
+        "views/gti_ecf_config_views.xml",
+        "views/gti_ecf_template_views.xml",
+        "views/account_move_views.xml",
+        "data/gti_ecf_template_data.xml",
+        "data/gti_ecf_cron.xml",
+        "views/report_invoice_qr.xml",
+    ],
+    "installable": True,
+    "application": False,
+}

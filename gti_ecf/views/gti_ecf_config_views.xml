@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_gti_ecf_config_form" model="ir.ui.view">
+        <field name="name">gti.ecf.config.form</field>
+        <field name="model">gti.ecf.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración GTI e-CF">
+                <header>
+                    <button
+                        name="action_test_connection"
+                        string="Probar Conexión"
+                        type="object"
+                        class="btn-primary"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Ej: GTI Producción"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="General">
+                            <field name="company_id"/>
+                            <field name="environment"/>
+                        </group>
+                        <group string="Conexión">
+                            <field name="url_base"/>
+                        </group>
+                    </group>
+                    <group string="Credenciales">
+                        <group>
+                            <field name="rnc_emisor"/>
+                            <field name="api_key" password="True"/>
+                        </group>
+                        <group>
+                            <field name="medio_emision"/>
+                        </group>
+                    </group>
+                    <group string="Datos del Emisor">
+                        <group>
+                            <field name="provincia_code"/>
+                            <field name="municipio_code"/>
+                        </group>
+                        <group>
+                            <field name="telefono_emisor"/>
+                        </group>
+                    </group>
+                    <group string="Token Activo" invisible="not token">
+                        <group>
+                            <field name="token" readonly="1"/>
+                            <field name="token_expiry" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_gti_ecf_config_list" model="ir.ui.view">
+        <field name="name">gti.ecf.config.list</field>
+        <field name="model">gti.ecf.config</field>
+        <field name="arch" type="xml">
+            <list string="Configuraciones GTI e-CF">
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="environment"/>
+                <field name="url_base"/>
+                <field name="rnc_emisor"/>
+                <field name="token_expiry"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_gti_ecf_config" model="ir.actions.act_window">
+        <field name="name">Configuración GTI e-CF</field>
+        <field name="res_model">gti.ecf.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem
+        id="menu_gti_ecf_root"
+        name="GTI e-CF"
+        sequence="99"
+        groups="gti_ecf.group_gti_ecf_admin"
+    />
+    <menuitem
+        id="menu_gti_ecf_config"
+        name="Configuración"
+        parent="menu_gti_ecf_root"
+        action="action_gti_ecf_config"
+        sequence="10"
+        groups="gti_ecf.group_gti_ecf_admin"
+    />
+
+</odoo>

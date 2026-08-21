@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!--
+    Shared inline stylesheet for all financial report web views.
+    Embedded as <style> via t-call to avoid 404s and asset-pipeline gotchas
+    when the page is loaded inside an iframe with no Odoo asset bundle.
+-->
+<template id="report_styles">
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     "Helvetica Neue", Arial, sans-serif;
+        font-size: 13px;
+        color: #1f2937;
+        background: #f3f4f6;
+        padding: 24px 16px;
+    }
+
+    /* Page card */
+    .afr-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+        padding: 24px 28px;
+    }
+
+    /* Header */
+    .afr-header { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb; }
+    .afr-title { font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0 0 2px; }
+    .afr-subtitle { color: #6b7280; font-size: 0.9rem; }
+    .afr-meta { color: #6b7280; font-size: 0.8rem; margin-top: 6px; }
+    .afr-meta strong { color: #374151; font-weight: 600; }
+
+    /* Filter bar */
+    .afr-filter-bar {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+    }
+    .afr-filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 14px;
+    }
+    .afr-cmp-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 14px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed #d1d5db;
+    }
+
+    /* Field (label + input stacked) */
+    .afr-field { display: flex; flex-direction: column; min-width: 0; }
+    .afr-label {
+        font-size: 0.7rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .afr-label .afr-label-hint {
+        text-transform: none;
+        font-weight: 400;
+        font-size: 0.65rem;
+        opacity: 0.7;
+        margin-left: 4px;
+    }
+
+    /* Form controls */
+    .afr-input, .afr-select, .afr-multiselect {
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+        padding: 7px 11px;
+        font-size: 13px;
+        color: #111827;
+        background: #ffffff;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        font-family: inherit;
+        line-height: 1.3;
+    }
+    .afr-input:hover, .afr-select:hover, .afr-multiselect:hover { border-color: #9ca3af; }
+    .afr-input:focus, .afr-select:focus, .afr-multiselect:focus {
+        outline: none;
+        border-color: #875A7B;
+        box-shadow: 0 0 0 3px rgba(135, 90, 123, 0.15);
+    }
+    .afr-input[type="date"] { min-width: 150px; }
+    .afr-input[type="text"] { min-width: 180px; }
+    .afr-select { min-width: 110px; padding-right: 28px; cursor: pointer; }
+    .afr-multiselect { min-width: 220px; padding: 4px; }
+    .afr-multiselect option { padding: 5px 9px; border-radius: 3px; }
+    .afr-multiselect option:checked {
+        background: #875A7B linear-gradient(0deg, #875A7B 0%, #875A7B 100%);
+        color: white;
+    }
+
+    /* Checkbox (custom) */
+    .afr-check { display: flex; align-items: center; gap: 7px; padding-bottom: 8px; }
+    .afr-check-input {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 17px;
+        height: 17px;
+        border: 1.5px solid #d1d5db;
+        border-radius: 4px;
+        background: #ffffff;
+        cursor: pointer;
+        position: relative;
+        margin: 0;
+        flex-shrink: 0;
+        transition: border-color 0.15s, background 0.15s;
+    }
+    .afr-check-input:hover { border-color: #875A7B; }
+    .afr-check-input:checked { background: #875A7B; border-color: #875A7B; }
+    .afr-check-input:checked::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 1px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    .afr-check-label { font-size: 13px; color: #374151; cursor: pointer; user-select: none; font-weight: 500; }
+
+    /* Action buttons (right-aligned) */
+    .afr-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        padding-bottom: 1px;
+    }
+    .afr-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 5px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+        font-family: inherit;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .afr-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(135, 90, 123, 0.2); }
+    .afr-btn-primary { background: #875A7B; color: white; border-color: #875A7B; }
+    .afr-btn-primary:hover { background: #6d4863; border-color: #6d4863; }
+    .afr-btn-outline { background: white; color: #4b5563; border-color: #d1d5db; }
+    .afr-btn-outline:hover { background: #f3f4f6; border-color: #9ca3af; color: #111827; }
+
+    /* Hint text inside the filter bar */
+    .afr-hint {
+        font-size: 0.78rem;
+        color: #6b7280;
+        font-style: italic;
+        align-self: center;
+        padding-bottom: 8px;
+    }
+
+    /* View-only toolbar (e.g. Expand / Collapse) */
+    .afr-view-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+    .afr-view-toolbar .afr-btn { padding: 5px 11px; font-size: 12px; }
+
+    /* Report table */
+    .afr-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .afr-table thead th {
+        background: #4b5563;
+        color: #ffffff;
+        padding: 10px 14px;
+        font-weight: 600;
+        text-align: left;
+        white-space: nowrap;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .afr-table thead th.afr-text-end { text-align: right; }
+    .afr-table tbody td {
+        padding: 7px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        white-space: nowrap;
+    }
+    .afr-table tbody td.afr-text-end { text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* Trial Balance / flat report totals row */
+    .afr-table tfoot td {
+        padding: 9px 14px;
+        background: #e5e7eb;
+        font-weight: 700;
+        border-top: 2px solid #9ca3af;
+        font-variant-numeric: tabular-nums;
+    }
+    .afr-table tfoot td.afr-text-end { text-align: right; }
+
+    /* General Ledger: per-account section with collapsible move lines */
+    .afr-account-section {
+        margin-bottom: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    .afr-account-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #f3f4f6;
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #e5e7eb;
+        user-select: none;
+    }
+    .afr-account-header:hover { background: #e5e7eb; }
+    .afr-account-header .o-toggle-icon { color: #4b5563; }
+    .afr-account-code {
+        font-weight: 700;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+    .afr-account-name { font-weight: 500; color: #374151; flex: 1; }
+    .afr-account-totals { display: flex; gap: 18px; font-size: 12px; flex-shrink: 0; }
+    .afr-account-totals .afr-stat { display: flex; flex-direction: column; align-items: flex-end; }
+    .afr-account-totals .afr-stat-label {
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        color: #6b7280;
+        letter-spacing: 0.05em;
+    }
+    .afr-account-totals .afr-stat-value {
+        font-weight: 700;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+    .afr-ledger-table { width: 100%; border-collapse: collapse; }
+    .afr-ledger-table thead th {
+        background: #6b7280;
+        color: #ffffff;
+        padding: 7px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-align: left;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .afr-ledger-table thead th.afr-text-end { text-align: right; }
+    .afr-ledger-table tbody td {
+        padding: 6px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 12.5px;
+        color: #4b5563;
+    }
+    .afr-ledger-table tbody td.afr-text-end { text-align: right; font-variant-numeric: tabular-nums; }
+    .afr-ledger-table tbody tr:hover td { background: #f9fafb; }
+    .afr-ledger-empty {
+        padding: 14px;
+        text-align: center;
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* Row hierarchy (financial report) */
+    .o-level-1 td { background: #e5e7eb; font-weight: 700; font-size: 0.95rem; }
+    .o-level-2 td { background: #f3f4f6; font-weight: 700; }
+    .o-level-3 td { font-weight: 600; font-style: italic; }
+    .o-level-4 td { font-weight: 400; }
+    .o-toggleable { cursor: pointer; }
+    .o-toggleable:hover td { filter: brightness(0.96); }
+    .o-toggle-icon {
+        display: inline-block;
+        width: 16px;
+        font-size: 10px;
+        color: #6b7280;
+        transition: transform 0.15s;
+        user-select: none;
+    }
+    .o-toggle-icon.collapsed { transform: rotate(-90deg); }
+    .o-account-row td { color: #4b5563; }
+    .o-account-row td:first-child { padding-left: 40px; }
+
+    /* Print */
+    @media print {
+        body { background: #ffffff; padding: 0; }
+        .afr-container { box-shadow: none; padding: 0; }
+        .afr-filter-bar, .afr-view-toolbar, .afr-no-print { display: none !important; }
+        .o-account-row { display: table-row !important; }
+        .o-toggle-icon { display: none !important; }
+    }
+</style>
+</template>
+
+</odoo>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="financial_report_view" name="Financial Report Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title t-esc="data['account_report_id'][1]"/>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title" t-esc="data['account_report_id'][1]"/>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>From:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>To:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <input type="hidden" name="account_report_id" t-att-value="account_report_id"/>
+
+        <div class="afr-filter-row">
+            <t t-call="accounting_pdf_reports.report_filter_bar_common"/>
+
+            <div class="afr-check">
+                <input type="checkbox" class="afr-check-input" id="cb_debit_credit"
+                       name="debit_credit" value="1"
+                       t-att-checked="'checked' if data.get('debit_credit') else None"/>
+                <label class="afr-check-label" for="cb_debit_credit">Debit / Credit</label>
+            </div>
+            <div class="afr-check">
+                <input type="checkbox" class="afr-check-input" id="cb_enable_filter"
+                       name="enable_filter" value="1"
+                       t-att-checked="'checked' if data.get('enable_filter') else None"/>
+                <label class="afr-check-label" for="cb_enable_filter">Comparison</label>
+            </div>
+
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+
+        <!-- Comparison-only inputs -->
+        <t t-if="data.get('enable_filter')">
+            <div class="afr-cmp-row">
+                <div class="afr-field">
+                    <label class="afr-label">Comparison Label</label>
+                    <input type="text" name="label_filter" class="afr-input"
+                           t-att-value="data.get('label_filter') or 'Comparison'"/>
+                </div>
+                <div class="afr-field">
+                    <label class="afr-label">Compare From</label>
+                    <input type="date" name="date_from_cmp" class="afr-input"
+                           t-att-value="data.get('date_from_cmp') or ''"/>
+                </div>
+                <div class="afr-field">
+                    <label class="afr-label">Compare To</label>
+                    <input type="date" name="date_to_cmp" class="afr-input"
+                           t-att-value="data.get('date_to_cmp') or ''"/>
+                </div>
+                <div class="afr-hint">
+                    Empty dates default to one month earlier than the main range.
+                </div>
+            </div>
+        </t>
+    </form>
+
+    <!-- View-only toolbar (expand / collapse) -->
+    <div class="afr-view-toolbar">
+        <button type="button" class="afr-btn afr-btn-outline" onclick="expandAll()">Expand All</button>
+        <button type="button" class="afr-btn afr-btn-outline" onclick="collapseAll()">Collapse All</button>
+    </div>
+
+    <!-- Report Table -->
+    <table class="afr-table">
+        <thead>
+            <tr>
+                <th style="width:55%">Name</th>
+                <t t-if="data.get('debit_credit')">
+                    <th class="afr-text-end">Debit</th>
+                    <th class="afr-text-end">Credit</th>
+                </t>
+                <th class="afr-text-end">Balance</th>
+                <t t-if="data.get('enable_filter')">
+                    <th class="afr-text-end" t-esc="data.get('label_filter') or 'Comparison'"/>
+                </t>
+            </tr>
+        </thead>
+        <tbody t-foreach="groups" t-as="grp">
+            <t t-set="has_accounts" t-value="bool(grp['accounts'])"/>
+            <t t-set="lvl" t-value="int(grp['report'].get('level', 1))"/>
+            <tr t-att-class="'o-level-%d%s' % (lvl, ' o-toggleable' if has_accounts else '')"
+                t-att-onclick="'toggleGroup(%d)' % grp_index if has_accounts else False">
+                <td>
+                    <span t-if="has_accounts"
+                          t-att-id="'icon-%d' % grp_index"
+                          class="o-toggle-icon">&#9660;</span>
+                    <span t-if="not has_accounts" style="display:inline-block;width:16px;"/>
+                    <span t-esc="grp['report']['name']"/>
+                </td>
+                <t t-if="data.get('debit_credit')">
+                    <td class="afr-text-end" t-esc="fmt(grp['report'].get('debit', 0))"/>
+                    <td class="afr-text-end" t-esc="fmt(grp['report'].get('credit', 0))"/>
+                </t>
+                <td class="afr-text-end" t-esc="fmt(grp['report'].get('balance', 0))"/>
+                <t t-if="data.get('enable_filter')">
+                    <td class="afr-text-end" t-esc="fmt(grp['report'].get('balance_cmp', 0))"/>
+                </t>
+            </tr>
+            <tr t-foreach="grp['accounts']" t-as="acc"
+                t-att-class="'o-account-row o-group-%d' % grp_index">
+                <td t-esc="acc['name']"/>
+                <t t-if="data.get('debit_credit')">
+                    <td class="afr-text-end" t-esc="fmt(acc.get('debit', 0))"/>
+                    <td class="afr-text-end" t-esc="fmt(acc.get('credit', 0))"/>
+                </t>
+                <td class="afr-text-end" t-esc="fmt(acc.get('balance', 0))"/>
+                <t t-if="data.get('enable_filter')">
+                    <td class="afr-text-end" t-esc="fmt(acc.get('balance_cmp', 0))"/>
+                </t>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    var groupStates = {};
+
+    function toggleGroup(groupId) {
+        var rows = document.querySelectorAll('.o-group-' + groupId);
+        var icon = document.getElementById('icon-' + groupId);
+        var expanded = groupStates[groupId] !== false;
+        groupStates[groupId] = !expanded;
+        rows.forEach(function(r) { r.style.display = expanded ? 'none' : ''; });
+        if (icon) {
+            if (expanded) {
+                icon.classList.add('collapsed');
+                icon.innerHTML = '&#9660;';
+            } else {
+                icon.classList.remove('collapsed');
+                icon.innerHTML = '&#9660;';
+            }
+        }
+    }
+
+    function expandAll() {
+        document.querySelectorAll('[class*="o-group-"]').forEach(function(r) {
+            r.style.display = '';
+        });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) {
+            i.classList.remove('collapsed');
+            i.innerHTML = '&#9660;';
+        });
+        Object.keys(groupStates).forEach(function(k) { groupStates[k] = true; });
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('[class*="o-group-"]').forEach(function(r) {
+            r.style.display = 'none';
+        });
+        document.querySelectorAll('.o-toggle-icon').forEach(function(i) {
+            i.classList.add('collapsed');
+            i.innerHTML = '&#9654;';
+        });
+        Object.keys(groupStates).forEach(function(k) { groupStates[k] = false; });
+    }
+
+    window.onbeforeprint = expandAll;
+    window.onafterprint = function() {
+        Object.keys(groupStates).forEach(function(k) {
+            if (groupStates[k] === false) {
+                document.querySelectorAll('.o-group-' + k).forEach(function(r) {
+                    r.style.display = 'none';
+                });
+            }
+        });
+    };
+</script>
+</body>
+</html>
+</template>
+
+</odoo>

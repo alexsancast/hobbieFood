@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="tax_report_view" name="Tax Report Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Tax Report</title>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+    <style>
+        .afr-tax-section { margin-bottom: 20px; }
+        .afr-tax-section h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #875A7B;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title">Tax Report</h1>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>From:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>To:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Entries:</strong>
+            <span t-if="data.get('target_move') == 'all'">All</span>
+            <span t-if="data.get('target_move') == 'posted'">Posted</span>
+        </div>
+    </div>
+
+    <!-- Filter bar (custom — only dates + target_move) -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <div class="afr-filter-row">
+            <div class="afr-field">
+                <label class="afr-label">From</label>
+                <input type="date" name="date_from" class="afr-input"
+                       t-att-value="data.get('date_from') or ''"/>
+            </div>
+            <div class="afr-field">
+                <label class="afr-label">To</label>
+                <input type="date" name="date_to" class="afr-input"
+                       t-att-value="data.get('date_to') or ''"/>
+            </div>
+            <div class="afr-field">
+                <label class="afr-label">Target Moves</label>
+                <select name="target_move" class="afr-select">
+                    <option value="posted"
+                            t-att-selected="'selected' if data.get('target_move') == 'posted' else None">Posted</option>
+                    <option value="all"
+                            t-att-selected="'selected' if data.get('target_move') == 'all' else None">All</option>
+                </select>
+            </div>
+            <t t-call="accounting_pdf_reports.report_filter_bar_buttons"/>
+        </div>
+    </form>
+
+    <!-- Sales taxes -->
+    <div class="afr-tax-section">
+        <h2>Sales</h2>
+        <table class="afr-table">
+            <thead>
+                <tr>
+                    <th>Tax Name</th>
+                    <th class="afr-text-end" style="width:180px;">Net Amount</th>
+                    <th class="afr-text-end" style="width:180px;">Tax Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-if="not sales">
+                    <tr><td colspan="3" class="afr-ledger-empty">No sales taxes in the selected range.</td></tr>
+                </t>
+                <tr t-foreach="sales" t-as="tax">
+                    <td t-esc="tax.get('name')"/>
+                    <td class="afr-text-end" t-esc="fmt(tax.get('net'))"/>
+                    <td class="afr-text-end" t-esc="fmt(tax.get('tax'))"/>
+                </tr>
+            </tbody>
+            <tfoot t-if="sales">
+                <tr>
+                    <td>Total</td>
+                    <td class="afr-text-end" t-esc="fmt(sales_total['net'])"/>
+                    <td class="afr-text-end" t-esc="fmt(sales_total['tax'])"/>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Purchase taxes -->
+    <div class="afr-tax-section">
+        <h2>Purchases</h2>
+        <table class="afr-table">
+            <thead>
+                <tr>
+                    <th>Tax Name</th>
+                    <th class="afr-text-end" style="width:180px;">Net Amount</th>
+                    <th class="afr-text-end" style="width:180px;">Tax Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-if="not purchases">
+                    <tr><td colspan="3" class="afr-ledger-empty">No purchase taxes in the selected range.</td></tr>
+                </t>
+                <tr t-foreach="purchases" t-as="tax">
+                    <td t-esc="tax.get('name')"/>
+                    <td class="afr-text-end" t-esc="fmt(tax.get('net'))"/>
+                    <td class="afr-text-end" t-esc="fmt(tax.get('tax'))"/>
+                </tr>
+            </tbody>
+            <tfoot t-if="purchases">
+                <tr>
+                    <td>Total</td>
+                    <td class="afr-text-end" t-esc="fmt(purchase_total['net'])"/>
+                    <td class="afr-text-end" t-esc="fmt(purchase_total['tax'])"/>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
+</template>
+
+</odoo>
