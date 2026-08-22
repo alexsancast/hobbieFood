@@ -43,6 +43,14 @@
             <t name="cancelled_invoice_title"></t>
         </xpath>
 
+        <!-- Vendor bill: show only the reference (e.g. COM/2026/0003), no "Vendor Bill" label -->
+        <xpath expr="//t[@name='vendor_bill_title']" position="replace">
+            <t name="vendor_bill_title"></t>
+        </xpath>
+        <xpath expr="//t[@name='self_billing_invoice_title']" position="replace">
+            <t name="self_billing_invoice_title"></t>
+        </xpath>
+
         <xpath expr="//div[hasclass('row')][1]" position="after">
             <t t-if="l10n_do_fiscal_invoice">
                 <div class="col-6" t-if="o.company_id.external_report_layout_id and o.company_id.external_report_layout_id.xml_id != 'web.external_layout_standard'">
