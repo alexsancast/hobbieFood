@@ -161,6 +161,11 @@
                             <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
                             <span t-esc="forced_vat"/>
                         </div>
+                        <div t-if="not forced_vat and company.vat">
+                            <strong>
+                                <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-esc="o.company_id.account_fiscal_country_id.vat_label"/>
+                                <t t-else="">RNC</t>: </strong><span t-field="o.company_id.vat"/>
+                        </div>
                     </div>
                     <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
                         <div class="col-6" name="fiscal_address_not_same_as_shipping" style="text-align: right;">
