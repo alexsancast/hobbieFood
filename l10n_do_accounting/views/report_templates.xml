@@ -3,13 +3,13 @@
 
     <template id="fiscal_info">
         <t t-set="ecf_representation" t-value="o.fiscal_type_id.prefix.startswith('E')"/>
-        <div class="col-6 first-page">
-            <h3 t-if="o.fiscal_type_id">
-                <t t-if="o.fiscal_type_id.prefix == 'B13'">
+        <div class="col-6 first-page" style="align-self: flex-start;">
+            <h3 t-if="o.fiscal_type_id" style="font-size: 18px; font-weight: bold;">
+                <t t-if="o.fiscal_type_id.prefix in ('B13', 'B03', 'B04', 'E33', 'E34')">
                     <span t-field="o.fiscal_type_id.name"/>
                 </t>
                 <t t-else="">
-                    Invoice of <span t-field="o.fiscal_type_id.name"/>
+                    Factura de <span t-field="o.fiscal_type_id.name"/>
                 </t>
             </h3>
             <div t-if="o.ref">
@@ -20,19 +20,57 @@
                 <span t-field="o.ref"/>
             </div>
             <div t-if="o.origin_out">
-                <strong t-if="o.origin_out.startswith('E')">e-NCF modified:</strong>
-                <strong t-else="">NCF modified:</strong>
+                <strong t-if="o.origin_out.startswith('E')">e-NCF modificado:</strong>
+                <strong t-else="">NCF modificado:</strong>
                 <span t-field="o.origin_out"/>
             </div>
             <div id="fiscal_exp_date"
                 t-if="o.state == 'posted'
                     and o.ref
                     and o.fiscal_type_id
-                    and o.fiscal_type_id.prefix not in ('B02', 'B03', 'B04', 'E32', 'E33', 'E34')
+                    and o.fiscal_type_id.prefix not in ('B02', 'B03', 'B04', 'E33', 'E34')
                     and o.ncf_expiration_date">
                 <strong>
-                    <t t-if="ecf_representation">Expiration e-NCF:</t>
-                    <t t-else="">Valid until:</t>
+                    <t t-if="ecf_representation">Expiración e-NCF:</t>
+                    <t t-else="">Válido hasta:</t>
+                </strong>
+                <span t-field="o.ncf_expiration_date"/>
+            </div>
+        </div>
+    </template>
+
+    <template id="fiscal_info_header">
+        <t t-set="ecf_representation" t-value="o.fiscal_type_id.prefix.startswith('E')"/>
+        <div style="text-align: center; white-space: nowrap;">
+            <h3 t-if="o.fiscal_type_id" style="font-size: 18px; font-weight: bold; white-space: nowrap; margin: 0 0 4px 0;">
+                <t t-if="o.fiscal_type_id.prefix in ('B13', 'B03', 'B04', 'E33', 'E34')">
+                    <span t-field="o.fiscal_type_id.name"/>
+                </t>
+                <t t-else="">
+                    Factura de <span t-field="o.fiscal_type_id.name"/>
+                </t>
+            </h3>
+            <div t-if="o.ref">
+                <strong>
+                    <t t-if="ecf_representation">e-NCF:</t>
+                    <t t-else="">NCF:</t>
+                </strong>
+                <span t-field="o.ref"/>
+            </div>
+            <div t-if="o.origin_out">
+                <strong t-if="o.origin_out.startswith('E')">e-NCF modificado:</strong>
+                <strong t-else="">NCF modificado:</strong>
+                <span t-field="o.origin_out"/>
+            </div>
+            <div id="fiscal_exp_date"
+                t-if="o.state == 'posted'
+                    and o.ref
+                    and o.fiscal_type_id
+                    and o.fiscal_type_id.prefix not in ('B02', 'B03', 'B04', 'E33', 'E34')
+                    and o.ncf_expiration_date">
+                <strong>
+                    <t t-if="ecf_representation">Expiración e-NCF:</t>
+                    <t t-else="">Válido hasta:</t>
                 </strong>
                 <span t-field="o.ncf_expiration_date"/>
             </div>
@@ -59,9 +97,28 @@
     </template>
 
     <template id="external_layout_standard_inherited" inherit_id="web.external_layout_standard">
-        <xpath expr="//div[@name='company_address']" position="after">
+        <xpath expr="//div[hasclass('d-flex')][hasclass('justify-content-between')]" position="replace">
             <t t-if="l10n_do_fiscal_invoice">
-                <t t-call="l10n_do_accounting.fiscal_info"/>
+                <table style="width: 100%; margin-bottom: 8px;">
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <img t-if="company.logo" class="o_company_logo_small" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+                            <div t-if="company.report_header" t-field="company.report_header" class="o_company_tagline mw-50 fw-bold">Company tagline</div>
+                        </td>
+                        <td class="l10n_do_fiscal_header" style="vertical-align: top; text-align: right;">
+                            <style>
+                                .l10n_do_fiscal_header .col-6 { width: 100%; padding: 0; margin: 0; }
+                            </style>
+                            <t t-call="l10n_do_accounting.fiscal_info"/>
+                        </td>
+                    </tr>
+                </table>
+            </t>
+            <t t-else="">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <img t-if="company.logo" class="o_company_logo_small" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+                    <div t-if="company.report_header" t-field="company.report_header" class="o_company_tagline mw-50 fw-bold">Company tagline</div>
+                </div>
             </t>
         </xpath>
         <xpath expr="//ul[@name='company_address_list']/li[@t-else='']" position="after">
@@ -84,21 +141,44 @@
         </xpath>
         <xpath expr="//div[@name='company_address']" position="after">
             <t t-if="l10n_do_fiscal_invoice">
-                <div name="company_address" class="float-end mb4 not-first-page-none">
-                    <ul class="list-unstyled">
-                        <li t-if="company.is_company_details_empty"><t t-esc="company.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/></li>
-                        <li t-else=""><t t-esc="company.company_details"/></li>
-                        <li t-if="forced_vat">
-                            <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
-                            <span t-esc="forced_vat"/>
-                        </li>
-                    </ul>
+                <div name="company_fiscal_info_header" style="float: right; margin-right: 25px;">
+                    <t t-call="l10n_do_accounting.fiscal_info_header"/>
                 </div>
             </t>
         </xpath>
         <xpath expr="//div[contains(@t-attf-class,'article')]/*[1]" position="before">
             <t t-if="l10n_do_fiscal_invoice">
-                <t t-call="l10n_do_accounting.complete_fiscal_info"/>
+                <div class="row mb8 first-page">
+                    <div class="col-6" name="company_address">
+                        <div t-if="company.is_company_details_empty">
+                            <strong><t t-esc="company.name"/></strong>
+                            <t t-esc="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
+                        </div>
+                        <div t-else="">
+                            <t t-esc="company.company_details"/>
+                        </div>
+                        <div t-if="forced_vat">
+                            <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                            <span t-esc="forced_vat"/>
+                        </div>
+                    </div>
+                    <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
+                        <div class="col-6" name="fiscal_address_not_same_as_shipping" style="text-align: right;">
+                            <t t-call="l10n_do_accounting.receiver_fiscal_info"/>
+                        </div>
+                        <div class="col-6">
+                            <div groups="account.group_delivery_invoice_address">
+                                <strong>Shipping Address:</strong>
+                                <div t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="col-6" name="fiscal_no_shipping" style="text-align: right;">
+                            <t t-call="l10n_do_accounting.receiver_fiscal_info"/>
+                        </div>
+                    </t>
+                </div>
             </t>
         </xpath>
     </template>
