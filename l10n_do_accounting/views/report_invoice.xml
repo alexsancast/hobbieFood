@@ -2,16 +2,24 @@
 <odoo>
 
     <template id="receiver_fiscal_info">
+        <t t-set="vat_digits" t-value="(o.partner_id.vat or '').replace('-', '')"/>
+        <div><strong>Cliente:</strong> <span t-field="o.commercial_partner_id.name"/></div>
         <div t-if="o.partner_id.vat">
             <strong>
-                <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-esc="o.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
-                <t t-else="">Tax ID</t><span t-if="o.move_type in ('out_invoice', 'out_refund')"> Customer: </span><span t-else=""> Vendor: </span> </strong><span t-field="o.partner_id.vat"/>
-        </div>                        
-        <strong>Name or Corporate Name:</strong> <span t-field="o.commercial_partner_id.name"/>
-        <address class="mb-0" t-field="o.commercial_partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                <t t-if="vat_digits.isdigit() and len(vat_digits) == 11">CED:</t>
+                <t t-else="">RNC:</t>
+            </strong>
+            <span t-field="o.partner_id.vat"/>
+        </div>
+        <!-- <address class="mb-0" t-field="o.commercial_partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/> -->
     </template>
 
-    <template id="report_invoice_document_inherit" inherit_id="account.report_invoice_document">
+    <template id="report_invoice_document_inherit" inherit_id="account.report_invoice_document" priority="20">
+
+        <!-- Hide "Payment Communication" on the printed invoice -->
+        <xpath expr="//div[p[@name='payment_communication']]" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
 
         <xpath expr="//div[hasclass('row')][1]" position="before">
             <t t-set="l10n_do_fiscal_invoice" t-value="o.is_l10n_do_fiscal_invoice and o.is_invoice() and o.fiscal_type_id and o.fiscal_type_id.assigned_sequence"/>
@@ -21,18 +29,23 @@
             <attribute name="t-if">not l10n_do_fiscal_invoice</attribute>
         </xpath>
 
-        <xpath expr="//div[@name='invoice_date']" position="attributes">
+        <xpath expr="//div[@name='reference']" position="attributes">
             <attribute name="t-if">not l10n_do_fiscal_invoice</attribute>
         </xpath>
 
-        <xpath expr="//div[@name='reference']" position="attributes">
-            <attribute name="t-if">not l10n_do_fiscal_invoice</attribute>
+        <xpath expr="//t[@name='invoice_title']" position="replace">
+            <t name="invoice_title"></t>
+        </xpath>
+        <xpath expr="//t[@name='draft_invoice_title']" position="replace">
+            <t name="draft_invoice_title"></t>
+        </xpath>
+        <xpath expr="//t[@name='cancelled_invoice_title']" position="replace">
+            <t name="cancelled_invoice_title"></t>
         </xpath>
 
         <xpath expr="//div[hasclass('row')][1]" position="after">
             <t t-if="l10n_do_fiscal_invoice">
                 <div class="col-6" t-if="o.company_id.external_report_layout_id and o.company_id.external_report_layout_id.xml_id != 'web.external_layout_standard'">
-                    <br/>
                     <div t-if="not forced_vat">
                         <t t-if="o.company_id.vat">
                             <strong>
@@ -40,11 +53,8 @@
                             <t t-else="">Tax ID</t>: </strong><span t-field="o.company_id.vat"/>
                         </t>
                     </div>
-                    <div t-if="o.invoice_date">
-                        <strong>Date:</strong> <span t-field="o.invoice_date"/>
-                    </div>
                 </div>
-                <div class="row pt-2">
+                <div class="row pt-2" t-if="not (o.company_id.external_report_layout_id and o.company_id.external_report_layout_id.xml_id == 'web.external_layout_boxed')">
                     <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
                         <div class="col-6" name="fiscal_address_not_same_as_shipping">
                             <t t-call="l10n_do_accounting.receiver_fiscal_info"/>
