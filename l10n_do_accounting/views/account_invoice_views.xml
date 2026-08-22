@@ -57,7 +57,7 @@
                             name="fiscal_type_id"
                             options="{'no_create': True, 'no_create_edit': True}"
                             domain="[('id', 'in', available_fiscal_type_ids)]"
-                            required="is_l10n_do_fiscal_invoice"
+                            required="is_l10n_do_fiscal_invoice and move_type != 'in_invoice'"
                             readonly="state != 'draft' or ref or assigned_sequence"
                         />
                         <field name="income_type"

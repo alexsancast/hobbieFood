@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, _
 from odoo.exceptions import UserError
 import json
 import io
@@ -102,6 +102,14 @@ class AccountMove(models.Model):
         self.ensure_one()
         prefix = self.fiscal_type_id.prefix if self.fiscal_type_id else ""
         return _prefix_to_ecf(prefix)
+
+    def _gti_purchase_is_selfbilling(self):
+        """Para in_invoice: True solo si el tipo e-CF es 43 (Gastos Menores) o
+        44 (Régimen Especial), los únicos casos donde la propia empresa es el
+        emisor legítimo. Cualquier otro tipo (p.ej. E31) representa un
+        comprobante ya emitido por el proveedor y no debe transmitirse."""
+        self.ensure_one()
+        return self._gti_get_tipo_ecf() in ("43", "44")
 
     def _compute_fiscal_sequence(self):
         # El compute padre (l10n_do_accounting), ante is_debit_note=True, busca el
@@ -559,14 +567,26 @@ class AccountMove(models.Model):
     def action_gti_reenviar(self):
         """Botón manual para reenviar a GTI cuando hubo un error."""
         self.ensure_one()
+        if self.move_type == "in_invoice" and not self._gti_purchase_is_selfbilling():
+            raise UserError(_(
+                "Esta factura de proveedor no se envía a la DGII: "
+                "el proveedor es quien transmite su propio comprobante. "
+                "Solo Gastos Menores (E43) y Régimen Especial (E44) se autofacturan."
+            ))
         self._gti_send()
 
     def action_post(self):
         """Override: después de confirmar, envía a GTI si es e-CF electrónico.
-        Tanto crédito como contado se envían en este momento."""
+        Tanto crédito como contado se envían en este momento.
+        Las facturas de proveedor (in_invoice) solo se envían cuando la propia
+        empresa es el emisor legítimo (Gastos Menores E43 / Régimen Especial
+        E44); en cualquier otro caso (p.ej. E31) el proveedor ya tiene su
+        propio comprobante y la transmisión es responsabilidad suya."""
         res = super().action_post()
         for move in self:
             if move.move_type not in ("out_invoice", "out_refund", "in_invoice"):
+                continue
+            if move.move_type == "in_invoice" and not move._gti_purchase_is_selfbilling():
                 continue
             if not move._gti_get_tipo_ecf():
                 continue
