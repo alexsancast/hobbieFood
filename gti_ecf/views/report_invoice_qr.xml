@@ -8,12 +8,12 @@
           <img t-att-src="'data:image/png;base64,%s' % o._gti_qr_image()"
                style="width:100px;height:100px;"/>
           <div style="font-size:14px; margin-top:4px;">
-            <t t-if="o.gti_codigo_seguridad">
-              <strong>Cód. Seguridad: </strong><span t-esc="o.gti_codigo_seguridad"/><br/>
-            </t>
-            <t t-if="o.gti_fecha_firma">
+            <div t-if="o.gti_codigo_seguridad" style="white-space: nowrap;">
+              <strong>Cód. Seguridad: </strong><span t-esc="o.gti_codigo_seguridad"/>
+            </div>
+            <div t-if="o.gti_fecha_firma" style="white-space: nowrap;">
               <strong>Fecha Firma: </strong><span t-esc="o.gti_fecha_firma"/>
-            </t>
+            </div>
           </div>
         </div>
       </div>

@@ -59,7 +59,7 @@
 
         <xpath expr="//div[hasclass('row')][1]" position="after">
             <t t-if="l10n_do_fiscal_invoice">
-                <div class="col-6" t-if="o.company_id.external_report_layout_id and o.company_id.external_report_layout_id.xml_id != 'web.external_layout_standard'">
+                <div class="col-6" t-if="o.company_id.external_report_layout_id and o.company_id.external_report_layout_id.xml_id not in ('web.external_layout_standard', 'web.external_layout_boxed')">
                     <div t-if="not forced_vat">
                         <t t-if="o.company_id.vat">
                             <strong>
