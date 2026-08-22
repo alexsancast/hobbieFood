@@ -3,7 +3,13 @@
 
     <template id="receiver_fiscal_info">
         <t t-set="vat_digits" t-value="(o.partner_id.vat or '').replace('-', '')"/>
-        <div><strong>Cliente:</strong> <span t-field="o.commercial_partner_id.name"/></div>
+        <div>
+            <strong>
+                <t t-if="o.move_type in ('in_invoice', 'in_refund')">Proveedor:</t>
+                <t t-else="">Cliente:</t>
+            </strong>
+            <span t-field="o.commercial_partner_id.name"/>
+        </div>
         <div t-if="o.partner_id.vat">
             <strong>
                 <t t-if="vat_digits.isdigit() and len(vat_digits) == 11">CED:</t>
