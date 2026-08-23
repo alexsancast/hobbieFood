@@ -183,6 +183,8 @@
         <!-- "Cliente"/"Proveedor": ocupa la posición donde antes estaba el número de factura (h2 del core) -->
         <xpath expr="//h2[@t-out='layout_document_title']" position="replace">
             <t t-if="l10n_do_fiscal_invoice">
+                <t t-set="l10n_do_accent_color" t-value="company.primary_color or '#E67327'"/>
+                <hr t-attf-style="clear: both; display: block; width: 100%; height: 0; border: none; border-top: 2px solid #{l10n_do_accent_color}; margin: 4px 0 16px 0;"/>
                 <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
                     <div class="row mb-4 first-page">
                         <div class="col-6" name="fiscal_address_not_same_as_shipping">
@@ -203,6 +205,7 @@
                         </div>
                     </div>
                 </t>
+                <hr t-attf-style="clear: both; display: block; width: 100%; height: 0; border: none; border-top: 2px solid #{l10n_do_accent_color}; margin: 4px 0 16px 0;"/>
             </t>
             <t t-else="">
                 <h2 t-out="layout_document_title"/>
