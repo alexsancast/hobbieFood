@@ -60,6 +60,11 @@
             <attribute name="t-value">4 + (1 if display_discount else 0) + (1 if display_taxes and not line.tax_ids else 0)</attribute>
         </xpath>
 
+        <!-- Líneas exentas (tasa 0%): no mostrar nada en la columna ITBIS -->
+        <xpath expr="//t[@t-set='taxes']" position="attributes">
+            <attribute name="t-value">', '.join(tax.tax_label for tax in line.tax_ids if tax.tax_label and tax.amount)</attribute>
+        </xpath>
+
         <xpath expr="//t[@name='invoice_title']" position="replace">
             <t name="invoice_title"></t>
         </xpath>
