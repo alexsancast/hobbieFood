@@ -150,21 +150,26 @@
             <t t-if="l10n_do_fiscal_invoice">
                 <div class="row mb8 first-page">
                     <div class="col-6" name="company_address">
-                        <div t-if="company.is_company_details_empty">
-                            <strong><t t-esc="company.name"/></strong>
-                            <t t-esc="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
-                        </div>
-                        <div t-else="">
-                            <t t-esc="company.company_details"/>
-                        </div>
-                        <div t-if="forced_vat">
-                            <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
-                            <span t-esc="forced_vat"/>
-                        </div>
-                        <div t-if="not forced_vat and company.vat">
-                            <strong>
-                                <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-esc="o.company_id.account_fiscal_country_id.vat_label"/>
-                                <t t-else="">RNC</t>: </strong><span t-field="o.company_id.vat"/>
+                        <style>
+                            #l10n_do_company_address p { margin: 0; }
+                        </style>
+                        <div id="l10n_do_company_address">
+                            <div t-if="company.is_company_details_empty">
+                                <strong><t t-esc="company.name"/></strong>
+                                <t t-esc="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>
+                            </div>
+                            <div t-else="">
+                                <t t-esc="company.company_details"/>
+                            </div>
+                            <div t-if="forced_vat">
+                                <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                                <span t-esc="forced_vat"/>
+                            </div>
+                            <div t-if="not forced_vat and company.vat">
+                                <strong>
+                                    <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-esc="o.company_id.account_fiscal_country_id.vat_label"/>
+                                    <t t-else="">RNC</t>: </strong><span t-field="o.company_id.vat"/>
+                            </div>
                         </div>
                     </div>
                     <!-- Número de factura: ocupa la posición donde antes estaba "Cliente" -->
