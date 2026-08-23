@@ -39,6 +39,11 @@
             <attribute name="t-if">not l10n_do_fiscal_invoice</attribute>
         </xpath>
 
+        <!-- Encabezado de columna "Taxes" -> "ITBIS" -->
+        <xpath expr="//th[@name='th_taxes']/span" position="replace">
+            <span>ITBIS</span>
+        </xpath>
+
         <xpath expr="//t[@name='invoice_title']" position="replace">
             <t name="invoice_title"></t>
         </xpath>
