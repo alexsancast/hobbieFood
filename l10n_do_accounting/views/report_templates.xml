@@ -167,8 +167,20 @@
                                 <t t-else="">RNC</t>: </strong><span t-field="o.company_id.vat"/>
                         </div>
                     </div>
-                    <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
-                        <div class="col-6" name="fiscal_address_not_same_as_shipping" style="text-align: right;">
+                    <!-- Número de factura: ocupa la posición donde antes estaba "Cliente" -->
+                    <div class="col-6" style="text-align: right;">
+                        <h2 t-if="o.name and o.name != '/'" t-field="o.name" style="margin: 0;"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- "Cliente"/"Proveedor": ocupa la posición donde antes estaba el número de factura (h2 del core) -->
+        <xpath expr="//h2[@t-out='layout_document_title']" position="replace">
+            <t t-if="l10n_do_fiscal_invoice">
+                <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
+                    <div class="row mb-4 first-page">
+                        <div class="col-6" name="fiscal_address_not_same_as_shipping">
                             <t t-call="l10n_do_accounting.receiver_fiscal_info"/>
                         </div>
                         <div class="col-6">
@@ -177,13 +189,18 @@
                                 <div t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                             </div>
                         </div>
-                    </t>
-                    <t t-else="">
-                        <div class="col-6" name="fiscal_no_shipping" style="text-align: right;">
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="row mb-4 first-page">
+                        <div class="col-6" name="fiscal_no_shipping">
                             <t t-call="l10n_do_accounting.receiver_fiscal_info"/>
                         </div>
-                    </t>
-                </div>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <h2 t-out="layout_document_title"/>
             </t>
         </xpath>
     </template>
