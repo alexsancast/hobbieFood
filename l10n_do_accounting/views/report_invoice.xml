@@ -44,6 +44,22 @@
             <span>ITBIS</span>
         </xpath>
 
+        <!-- Columna "Unidad de Medida" -->
+        <xpath expr="//th[@name='th_quantity']" position="after">
+            <th name="th_uom" class="text-end"><span>U.M.</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']/span[@t-field='line.product_uom_id']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']" position="after">
+            <td name="td_uom" class="text-end">
+                <span t-field="line.product_uom_id"/>
+            </td>
+        </xpath>
+        <xpath expr="//t[@t-set='line_colspan'][@t-value=&quot;3 + (1 if display_discount else 0) + (1 if display_taxes and not line.tax_ids else 0)&quot;]" position="attributes">
+            <attribute name="t-value">4 + (1 if display_discount else 0) + (1 if display_taxes and not line.tax_ids else 0)</attribute>
+        </xpath>
+
         <xpath expr="//t[@name='invoice_title']" position="replace">
             <t name="invoice_title"></t>
         </xpath>
