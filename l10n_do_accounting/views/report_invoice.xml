@@ -123,9 +123,18 @@
 
     </template>
 
-    <!-- Fila "Subtotal Exento" en la tabla de totales -->
+    <!-- Filas "Subtotal Gravado" / "Subtotal Exento" en la tabla de totales -->
     <template id="document_tax_totals_inherit" inherit_id="account.document_tax_totals_template">
-        <xpath expr="//t[@t-foreach=&quot;tax_totals['subtotals']&quot;]" position="after">
+        <xpath expr="//tr[hasclass('o_subtotal')]" position="after">
+            <t t-set="l10n_do_subtotal_gravado" t-value="sum(l.price_subtotal for l in o.invoice_line_ids if l.display_type == 'product' and any(t.amount for t in l.tax_ids))"/>
+            <tr t-if="l10n_do_subtotal_gravado" class="o_subtotal">
+                <td>
+                    <span>Subtotal Gravado</span>
+                </td>
+                <td class="text-end">
+                    <span t-out="l10n_do_subtotal_gravado" t-options='{"widget": "monetary", "display_currency": currency}'/>
+                </td>
+            </tr>
             <t t-set="l10n_do_subtotal_exento" t-value="sum(l.price_subtotal for l in o.invoice_line_ids if l.display_type == 'product' and not any(t.amount for t in l.tax_ids))"/>
             <tr t-if="l10n_do_subtotal_exento" class="o_subtotal">
                 <td>
