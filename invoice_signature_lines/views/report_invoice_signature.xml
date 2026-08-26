@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            Invoices on this company use the "boxed" external report layout.
+            The signature lines are injected into the footer band itself (rather
+            than the flowing body) so they sit at a fixed spot right above the
+            existing footer text, instead of wherever the body content happens
+            to end.
+
+            The footer HTML is rendered once and repeated by wkhtmltopdf on
+            every page, so without extra help the lines would be duplicated on
+            multi-page invoices. wkhtmltopdf appends the current/total page
+            numbers as "page"/"topage" query-string params when it loads the
+            footer document for each page, so a small inline script hides the
+            block unless this is the last page.
+
+            Caveat: when several invoices are printed/downloaded together as
+            one combined PDF, page/topage count the whole batch (same as the
+            existing "Page X / Y" footer text already does), so the lines
+            would only show on the very last page of the batch, not on each
+            invoice's own last page.
+        -->
+        <!--
+            NOTE on the document title on every page: the natural approach
+            would be to repeat the invoice title in the HEADER band, since
+            it's rendered once as normal body content and only ever lands on
+            page 1. That was tried first, but this server's wkhtmltopdf only
+            renders the header HTML on the FIRST page of a document and
+            leaves it blank on every later page (reproduced with a plain
+            unconditional debug marker and confirmed independent of this
+            module, still blank with the module fully uninstalled). The
+            footer HTML does NOT have this problem (proven above), so the
+            continuation page title is placed in the footer band instead,
+            styled to match, right above the signature lines.
+        -->
+        <template id="external_layout_boxed_signature_lines" inherit_id="web.external_layout_boxed">
+            <xpath expr="//div[contains(@t-attf-class, 'footer o_company')]/div[contains(@t-attf-class, 'o_footer_content')]" position="before">
+                <h2 t-if="o and o._name == 'account.move' and o.name and o.name != '/'"
+                    class="o_invoice_continuation_title text-end"
+                    style="margin-top: 0; margin-bottom: 30px;"
+                    t-esc="o.name"/>
+                <div t-if="o and o._name == 'account.move'"
+                     class="o_invoice_signature_lines"
+                     style="display: table; width: 100%; table-layout: fixed; margin-bottom: 6px;">
+                    <div style="display: table-cell; width: 50%; padding-right: 12px; text-align: center;">
+                        <div style="border-top: 1px solid #000; padding-top: 4px;">Entregado por</div>
+                    </div>
+                    <div style="display: table-cell; width: 50%; padding-left: 12px; text-align: center;">
+                        <div style="border-top: 1px solid #000; padding-top: 4px;">Recibido por</div>
+                    </div>
+                </div>
+                <script t-if="o and o._name == 'account.move'" type="text/javascript">
+                    (function () {
+                        try {
+                            function getParam(name) {
+                                var m = new RegExp('[?&amp;]' + name + '=([^&amp;]*)').exec(window.location.search || '');
+                                return m ? decodeURIComponent(m[1]) : null;
+                            }
+                            var page = getParam('page');
+                            var topage = getParam('topage');
+                            var i, els;
+                            if (page &amp;&amp; topage &amp;&amp; page !== topage) {
+                                els = document.getElementsByClassName('o_invoice_signature_lines');
+                                for (i = 0; i &lt; els.length; i++) {
+                                    els[i].style.display = 'none';
+                                }
+                            }
+                            if (page === '1') {
+                                els = document.getElementsByClassName('o_invoice_continuation_title');
+                                for (i = 0; i &lt; els.length; i++) {
+                                    els[i].style.display = 'none';
+                                }
+                            }
+                        } catch (e) { /* ignore */ }
+                    })();
+                </script>
+            </xpath>
+        </template>
+    </data>
+</odoo>
