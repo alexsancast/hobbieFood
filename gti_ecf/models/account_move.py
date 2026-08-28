@@ -190,7 +190,7 @@ class AccountMove(models.Model):
         # GTI valida esta fórmula con los valores tal como vienen en el JSON,
         # DescuentoMonto ya redondeados (4 y 2 decimales respectivamente).
         lineas_gti = []
-        for line in self.invoice_line_ids:
+        for line in self.invoice_line_ids.filtered(lambda l: l.display_type == "product"):
             cantidad = line.quantity
             precio_unit = round(line.price_unit, 4)
             descuento_monto = (
