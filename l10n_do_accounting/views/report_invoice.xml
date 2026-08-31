@@ -27,6 +27,16 @@
             <attribute name="t-if">False</attribute>
         </xpath>
 
+        <!-- Hide "Due Date" on the printed invoice -->
+        <xpath expr="//div[@name='due_date']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+
+        <!-- Hide payment terms note/details on the printed invoice -->
+        <xpath expr="//div[span[@name='payment_term']]" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+
         <xpath expr="//div[hasclass('row')][1]" position="before">
             <t t-set="l10n_do_fiscal_invoice" t-value="o.is_l10n_do_fiscal_invoice and o.is_invoice() and o.fiscal_type_id and o.fiscal_type_id.assigned_sequence"/>
         </xpath>
