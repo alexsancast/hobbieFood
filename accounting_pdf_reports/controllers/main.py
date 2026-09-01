@@ -1,5 +1,7 @@
+import io
 from datetime import date
 
+import xlsxwriter
 from dateutil.relativedelta import relativedelta
 
 from odoo import http
@@ -644,4 +646,119 @@ class FinancialReportController(http.Controller):
         return _render_pdf_response(
             'accounting_pdf_reports.action_report_journal',
             wizard, data, 'Journals_Audit.pdf',
+        )
+
+    # ---------------------------------------------------------------------
+    # Margen de Ganancia
+    # ---------------------------------------------------------------------
+
+    def _build_margin_data(self, kwargs):
+        date_from, date_to = _default_dates(kwargs)
+        target_move = kwargs.get('target_move') or 'posted'
+        journal_ids = _parse_int_list(request.httprequest.values.getlist('journal_ids'))
+
+        company = request.env.company
+        if not journal_ids:
+            journal_ids = _all_company_journals().ids
+
+        wizard = request.env['account.margin.report'].create({
+            'date_from': date_from,
+            'date_to': date_to,
+            'target_move': target_move,
+            'journal_ids': [(6, 0, journal_ids)],
+            'company_id': company.id,
+        })
+
+        data = {'ids': wizard.ids, 'model': 'account.margin.report', 'form': {}}
+        data['form'] = wizard.read([
+            'date_from', 'date_to', 'journal_ids', 'target_move', 'company_id',
+        ])[0]
+        used_context = wizard._build_contexts(data)
+        data['form']['used_context'] = dict(used_context, lang=get_lang(request.env).code)
+        return wizard, data
+
+    @http.route('/accounting/report/margin', type='http', auth='user', methods=['GET'])
+    def view_margin(self, **kwargs):
+        wizard, data = self._build_margin_data(kwargs)
+
+        report_model = request.env['report.accounting_pdf_reports.report_margin']
+        lines, totals = report_model.get_margin_lines(data)
+
+        return request.render('accounting_pdf_reports.margin_report_view', {
+            'lines': lines,
+            'totals': totals,
+            'data': data['form'],
+            'company': request.env.company,
+            'fmt': _money_formatter(),
+            'all_journals': _all_company_journals(),
+            'selected_journal_ids': set(data['form'].get('journal_ids') or []),
+            'apply_url': '/accounting/report/margin',
+            'pdf_url': '/accounting/report/margin/pdf',
+            'xlsx_url': '/accounting/report/margin/xlsx',
+        })
+
+    @http.route('/accounting/report/margin/pdf', type='http', auth='user',
+                methods=['POST', 'GET'], csrf=False)
+    def pdf_margin(self, **kwargs):
+        wizard, data = self._build_margin_data(kwargs)
+        return _render_pdf_response(
+            'accounting_pdf_reports.action_report_margin',
+            wizard, data, 'Margen_de_Ganancia.pdf',
+        )
+
+    @http.route('/accounting/report/margin/xlsx', type='http', auth='user',
+                methods=['POST', 'GET'], csrf=False)
+    def xlsx_margin(self, **kwargs):
+        wizard, data = self._build_margin_data(kwargs)
+        report_model = request.env['report.accounting_pdf_reports.report_margin']
+        lines, totals = report_model.get_margin_lines(data)
+
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = workbook.add_worksheet('Margen de Ganancia')
+
+        header_fmt = workbook.add_format({'bold': True, 'bg_color': '#875A7B', 'font_color': 'white'})
+        money_fmt = workbook.add_format({'num_format': '#,##0.00'})
+        total_fmt = workbook.add_format({'bold': True})
+        total_money_fmt = workbook.add_format({'bold': True, 'num_format': '#,##0.00'})
+
+        headers = [
+            'Fecha', 'Comprobante', 'Cliente', 'Producto', 'Cantidad',
+            'Venta (sin ITBIS)', 'Costo', 'Margen', 'Margen %',
+        ]
+        for col, title in enumerate(headers):
+            sheet.write(0, col, title, header_fmt)
+
+        row = 1
+        for l in lines:
+            sheet.write(row, 0, str(l['fecha'] or ''))
+            sheet.write(row, 1, l['documento'] or '')
+            sheet.write(row, 2, l['cliente'] or '')
+            sheet.write(row, 3, l['producto'] or '')
+            sheet.write_number(row, 4, l['cantidad'])
+            sheet.write_number(row, 5, l['venta'], money_fmt)
+            sheet.write_number(row, 6, l['costo'], money_fmt)
+            sheet.write_number(row, 7, l['margen'], money_fmt)
+            sheet.write_number(row, 8, l['margen_pct'], money_fmt)
+            row += 1
+
+        sheet.merge_range(row, 0, row, 4, 'Total', total_fmt)
+        sheet.write_number(row, 5, totals['venta'], total_money_fmt)
+        sheet.write_number(row, 6, totals['costo'], total_money_fmt)
+        sheet.write_number(row, 7, totals['margen'], total_money_fmt)
+        sheet.write_number(row, 8, totals['margen_pct'], total_money_fmt)
+
+        sheet.set_column(0, 0, 12)
+        sheet.set_column(1, 1, 16)
+        sheet.set_column(2, 3, 28)
+        sheet.set_column(4, 8, 14)
+
+        workbook.close()
+        output.seek(0)
+        return request.make_response(
+            output.read(),
+            headers=[
+                ('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                ('Content-Disposition', content_disposition('Margen_de_Ganancia.xlsx')),
+            ],
         )

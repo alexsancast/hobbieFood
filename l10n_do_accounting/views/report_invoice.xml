@@ -27,6 +27,16 @@
             <attribute name="t-if">False</attribute>
         </xpath>
 
+        <!-- Hide "Due Date" on the printed invoice -->
+        <xpath expr="//div[@name='due_date']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+
+        <!-- Hide payment terms note/details on the printed invoice -->
+        <xpath expr="//div[span[@name='payment_term']]" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+
         <xpath expr="//div[hasclass('row')][1]" position="before">
             <t t-set="l10n_do_fiscal_invoice" t-value="o.is_l10n_do_fiscal_invoice and o.is_invoice() and o.fiscal_type_id and o.fiscal_type_id.assigned_sequence"/>
         </xpath>
@@ -125,6 +135,11 @@
 
     <!-- Filas "Subtotal Gravado" / "Subtotal Exento" en la tabla de totales -->
     <template id="document_tax_totals_inherit" inherit_id="account.document_tax_totals_template">
+        <!-- Ocultar la fila genérica "Subtotal": solo dejamos Gravado/Exento -->
+        <xpath expr="//tr[@t-if=&quot;subtotal['tax_groups']&quot;]" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+
         <xpath expr="//tr[hasclass('o_subtotal')]" position="after">
             <t t-set="l10n_do_subtotal_gravado" t-value="sum(l.price_subtotal for l in o.invoice_line_ids if l.display_type == 'product' and any(t.amount for t in l.tax_ids))"/>
             <tr t-if="l10n_do_subtotal_gravado" class="o_subtotal">
