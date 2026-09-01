@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_margin">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <h2>Margen de Ganancia</h2>
+
+                    <div class="row mt32">
+                        <div class="col-3">
+                            <strong>Compañía:</strong>
+                            <p t-esc="company.name"/>
+                        </div>
+                        <div class="col-3">
+                            <strong>Desde:</strong>
+                            <p t-esc="data['form'].get('date_from') or ''"/>
+                        </div>
+                        <div class="col-3">
+                            <strong>Hasta:</strong>
+                            <p t-esc="data['form'].get('date_to') or ''"/>
+                        </div>
+                        <div class="col-3">
+                            <strong>Movimientos:</strong>
+                            <p t-if="data['form']['target_move'] == 'all'">Todos</p>
+                            <p t-if="data['form']['target_move'] == 'posted'">Solo Contabilizados</p>
+                        </div>
+                    </div>
+                    <p class="text-muted">
+                        El costo utilizado es el costo actual del producto (no el costo
+                        histórico al momento de la venta).
+                    </p>
+
+                    <table class="table table-sm table-reports">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Comprobante</th>
+                                <th>Cliente</th>
+                                <th>Producto</th>
+                                <th class="text-end">Cantidad</th>
+                                <th class="text-end">Venta (sin ITBIS)</th>
+                                <th class="text-end">Costo</th>
+                                <th class="text-end">Margen</th>
+                                <th class="text-end">Margen %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="lines" t-as="l">
+                                <td><span t-esc="l['fecha']"/></td>
+                                <td><span t-esc="l['documento']"/></td>
+                                <td><span t-esc="l['cliente']"/></td>
+                                <td><span t-esc="l['producto']"/></td>
+                                <td class="text-end"><span t-esc="l['cantidad']"/></td>
+                                <td class="text-end"><span t-esc="l['venta']" t-options="{'widget': 'monetary', 'display_currency': l['currency']}"/></td>
+                                <td class="text-end"><span t-esc="l['costo']" t-options="{'widget': 'monetary', 'display_currency': l['currency']}"/></td>
+                                <td class="text-end"><span t-esc="l['margen']" t-options="{'widget': 'monetary', 'display_currency': l['currency']}"/></td>
+                                <td class="text-end"><span t-esc="l['margen_pct']"/>%</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5">Total</th>
+                                <th class="text-end"><span t-esc="totals['venta']" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/></th>
+                                <th class="text-end"><span t-esc="totals['costo']" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/></th>
+                                <th class="text-end"><span t-esc="totals['margen']" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/></th>
+                                <th class="text-end"><span t-esc="totals['margen_pct']"/>%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

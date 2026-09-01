@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="margin_report_view" name="Margin Report Interactive View">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Margen de Ganancia</title>
+    <t t-call="accounting_pdf_reports.report_styles"/>
+</head>
+<body>
+<div class="afr-container">
+
+    <!-- Header -->
+    <div class="afr-header">
+        <h1 class="afr-title">Margen de Ganancia</h1>
+        <div class="afr-subtitle" t-esc="company.name"/>
+        <div class="afr-meta">
+            <t t-if="data.get('date_from')">
+                <strong>Desde:</strong> <span t-esc="data['date_from']"/>&#160;&#160;
+            </t>
+            <t t-if="data.get('date_to')">
+                <strong>Hasta:</strong> <span t-esc="data['date_to']"/>&#160;&#160;
+            </t>
+            <strong>Movimientos:</strong>
+            <span t-if="data.get('target_move') == 'all'">Todos</span>
+            <span t-if="data.get('target_move') == 'posted'">Solo Contabilizados</span>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <form method="GET" t-att-action="apply_url" class="afr-filter-bar">
+        <div class="afr-filter-row">
+            <t t-call="accounting_pdf_reports.report_filter_bar_common"/>
+
+            <div class="afr-actions">
+                <button type="submit" class="afr-btn afr-btn-primary">Apply</button>
+                <button type="submit" t-att-formaction="pdf_url" formmethod="post" formtarget="_blank"
+                        class="afr-btn afr-btn-outline">PDF</button>
+                <button type="submit" t-att-formaction="xlsx_url" formmethod="get" formtarget="_blank"
+                        class="afr-btn afr-btn-outline">Excel</button>
+                <button type="button" class="afr-btn afr-btn-outline afr-no-print"
+                        onclick="window.print()">Print</button>
+            </div>
+        </div>
+    </form>
+
+    <p class="afr-subtitle">
+        El costo utilizado es el costo actual del producto (no el costo histórico
+        al momento de la venta).
+    </p>
+
+    <t t-if="not lines">
+        <div class="afr-ledger-empty">No hay líneas que coincidan con los filtros seleccionados.</div>
+    </t>
+
+    <t t-if="lines">
+        <table class="afr-ledger-table">
+            <thead>
+                <tr>
+                    <th style="width:90px;">Fecha</th>
+                    <th style="width:120px;">Comprobante</th>
+                    <th>Cliente</th>
+                    <th>Producto</th>
+                    <th class="afr-text-end" style="width:80px;">Cantidad</th>
+                    <th class="afr-text-end" style="width:120px;">Venta (sin ITBIS)</th>
+                    <th class="afr-text-end" style="width:110px;">Costo</th>
+                    <th class="afr-text-end" style="width:110px;">Margen</th>
+                    <th class="afr-text-end" style="width:90px;">Margen %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr t-foreach="lines" t-as="l">
+                    <td t-esc="l['fecha'] or ''"/>
+                    <td t-esc="l['documento'] or ''"/>
+                    <td t-esc="l['cliente'] or ''"/>
+                    <td t-esc="l['producto'] or ''"/>
+                    <td class="afr-text-end" t-esc="l['cantidad']"/>
+                    <td class="afr-text-end" t-esc="fmt(l['venta'])"/>
+                    <td class="afr-text-end" t-esc="fmt(l['costo'])"/>
+                    <td class="afr-text-end" t-esc="fmt(l['margen'])"/>
+                    <td class="afr-text-end"><t t-esc="l['margen_pct']"/>%</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5">Total</th>
+                    <th class="afr-text-end" t-esc="fmt(totals['venta'])"/>
+                    <th class="afr-text-end" t-esc="fmt(totals['costo'])"/>
+                    <th class="afr-text-end" t-esc="fmt(totals['margen'])"/>
+                    <th class="afr-text-end"><t t-esc="totals['margen_pct']"/>%</th>
+                </tr>
+            </tfoot>
+        </table>
+    </t>
+
+</div>
+</body>
+</html>
+</template>
+
+</odoo>
