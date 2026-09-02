@@ -328,7 +328,10 @@ class AccountMove(models.Model):
         totales = {"MontoTotal": round(monto_total, 2)}
         if es_emisor_simple:
             totales["MontoExento"] = round(monto_exento or monto_total, 2)
-        else:
+        elif monto_gravado:
+            # Los campos *I1 solo se envían si existe al menos una línea con
+            # IndicadorFacturacion=1 (ITBIS 18%); GTI rechaza el documento si
+            # se incluyen sin líneas gravadas que los respalden.
             totales.update({
                 "MontoGravadoTotal": round(monto_gravado, 2),
                 "MontoGravadoI1": round(monto_gravado, 2),
@@ -338,6 +341,9 @@ class AccountMove(models.Model):
             })
             if monto_exento:
                 totales["MontoExento"] = round(monto_exento, 2)
+        else:
+            # Factura totalmente exenta: ninguna línea con ITBIS 18%.
+            totales["MontoExento"] = round(monto_exento or monto_total, 2)
 
         # Construir líneas de detalle
         detalles = []
