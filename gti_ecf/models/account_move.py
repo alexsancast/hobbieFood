@@ -199,18 +199,23 @@ class AccountMove(models.Model):
                 else 0.0
             )
             monto_item = round(precio_unit * cantidad - descuento_monto, 2)
+            # Un producto exento en l10n_do lleva asignado el impuesto
+            # "ITBIS Exempt" (amount=0), no la ausencia de impuesto, por lo
+            # que hay que mirar el amount y no solo la presencia de tax_ids.
+            es_gravado = any(t.amount for t in line.tax_ids)
             lineas_gti.append({
                 "line": line,
                 "cantidad": cantidad,
                 "precio_unit": precio_unit,
                 "descuento_monto": descuento_monto,
                 "monto_item": monto_item,
+                "es_gravado": es_gravado,
             })
 
         # Totales derivados de los MontoItem efectivamente enviados,
         # para garantizar consistencia con la validación de GTI.
-        monto_gravado = sum(l["monto_item"] for l in lineas_gti if l["line"].tax_ids)
-        monto_exento = sum(l["monto_item"] for l in lineas_gti if not l["line"].tax_ids)
+        monto_gravado = sum(l["monto_item"] for l in lineas_gti if l["es_gravado"])
+        monto_exento = sum(l["monto_item"] for l in lineas_gti if not l["es_gravado"])
         total_itbis = round(monto_gravado * 0.18, 2)
         monto_total = round(monto_gravado + monto_exento + total_itbis, 2)
 
@@ -341,7 +346,7 @@ class AccountMove(models.Model):
             if es_emisor_simple:
                 indicador = 4  # siempre Exento para 43/44
             else:
-                indicador = 1 if line.tax_ids else 4
+                indicador = 1 if datos["es_gravado"] else 4
             item = {
                 "NumeroLinea": idx,
                 "IndicadorFacturacion": indicador,
