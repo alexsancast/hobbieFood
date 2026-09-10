@@ -6,4 +6,15 @@
             <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
     </data>
+
+    <data noupdate="1">
+        <!-- Cada empresa solo debe ver/editar su propia configuración GTI;
+             company_id es obligatorio en gti.ecf.config, así que no aplica
+             el caso "compartido" (company_id vacío) que usan otros modelos. -->
+        <record id="gti_ecf_config_comp_rule" model="ir.rule">
+            <field name="name">GTI e-CF Config: multi-company</field>
+            <field name="model_id" ref="model_gti_ecf_config"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
 </odoo>
