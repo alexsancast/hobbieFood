@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--inherited to remove the "Powered by Odoo" footer and replace the "Need an
+    invoice?" QR block with a QR code linking to the Instagram page-->
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('footer-powered-by')]" position="replace"/>
+        <xpath expr="//div[hasclass('pos-receipt-qr')]" position="replace">
+            <div class="pos-receipt-instagram-qr pos-receipt-center-align pt-3">
+                <div class="fw-bolder">¡Síguenos en Instagram!</div>
+                <img src="/order_receipt/static/src/img/instagram_qr.png" class="my-1" style="width:90px;height:90px;"/>
+                <div>@hobbie_foods</div>
+            </div>
+        </xpath>
+    </t>
+</templates>
